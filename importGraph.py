@@ -25,7 +25,7 @@ def loadVariableInfo():
         print(f"File '{file_name}' is empty or does not exist.")
 
 
-def CreateNode(df,dict):
+def CreateNode(df, dict):
 
     nodes = []
     label = dict["Node Name"]
@@ -46,20 +46,18 @@ def importGraph(graph, df, dicts):
     if len(dicts) == 1:
         label, propertyKey, curNodes = CreateNode(df,dicts[0])
         for node in curNodes:
-            graph.merge(node, label, propertyKey)
+            graph.merge(node, label, dicts[0][propertyKey])
     for i in range(len(dicts) - 1):
-        relationship = dicts[i]["Relationship"]
-        del dicts[i]["Relationship"]
+        relationship = dicts[i]["Relation"]
+        del dicts[i]["Relation"]
         label1, propertyKey1, curNodes = CreateNode(df, dicts[i])
         label2, propertyKey2, nextNodes = CreateNode(df, dicts[i+1])
         n = len(curNodes)
         for j in range(n):
             relation = Relationship(curNodes[j], relationship, nextNodes[j])
-            graph.merge(curNodes[j], label1, propertyKey1)
-            graph.merge(nextNodes[j], label2, propertyKey2)
+            graph.merge(curNodes[j], label1, dicts[i][propertyKey1])
+            graph.merge(nextNodes[j], label2, dicts[i+1][propertyKey2])
             graph.merge(relation)
-
-
 
 
 cached_data = []
@@ -68,5 +66,13 @@ g = Graph(st.secrets["NEO4J_URI"], auth=(st.secrets["NEO4J_USERNAME"], st.secret
 
 path = pd.read_csv("/Users/sesamekiller/Desktop/University_Info.csv")
 
-importGraph(g, path, cached_data)
+
+def startImport():
+    loadVariableInfo()
+    importGraph(g, path, cached_data)
+
+
+if __name__ == "__main__":
+    loadVariableInfo()
+    startImport()
 
