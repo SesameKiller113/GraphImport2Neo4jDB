@@ -5,11 +5,13 @@ from py2neo import Graph, Node
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QPushButton, QLabel, QLineEdit, QFileDialog, QMessageBox
 )
+from csvPreview import PreviewWindow
 
 
 class CSVToNeo4jApp(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.preview_window = None
         self.setWindowTitle("Import CSV to Neo4j")
         self.setWindowIcon(QIcon("icon.png"))
         self.initUI()
@@ -35,7 +37,7 @@ class CSVToNeo4jApp(QMainWindow):
         # Create "Import" button
         self.import_btn = QPushButton("Import to Neo4j", self)
         self.import_btn.setGeometry(200, 70, 120, 40)
-        self.import_btn.clicked.connect(self.import_to_neo4j)
+        self.import_btn.clicked.connect(self.trans_to_import_window)
 
     def select_file(self):
         """Open a file dialog to select a CSV file"""
@@ -48,9 +50,13 @@ class CSVToNeo4jApp(QMainWindow):
         if file_path:
             self.file_path_input.setText(file_path)
 
-    def import_to_neo4j(self):
+    def trans_to_import_window(self):
         """Import data from the selected CSV file to Neo4j"""
         file_path = self.file_path_input.text()
+
+        # set default file path for test
+        file_path = "/Users/sesamekiller/Desktop/University_Info.csv"
+
         if not file_path:
             QMessageBox.critical(self, "Error", "Please select a CSV file!")
             return
@@ -58,6 +64,11 @@ class CSVToNeo4jApp(QMainWindow):
         try:
             # Load the CSV file into a DataFrame
             data = pd.read_csv(file_path)
+
+            # Open a new window to preview the data
+            self.preview_window = PreviewWindow(data)
+            self.preview_window.show()
+            self.close()
 
         except Exception as e:
             # Show an error message if the import fails
